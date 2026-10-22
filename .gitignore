@@ -459,3 +459,6 @@ TSWLatexianTemp*
 # Personalization
 # ============================================
 refs/
+
+# Local inference workloads, model links, logs, results, and traces
+/artifacts/

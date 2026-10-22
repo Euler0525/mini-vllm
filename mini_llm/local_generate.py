@@ -53,6 +53,7 @@ def generate(
         rendered_prompt,
         return_tensors="pt",
     ).input_ids.to(settings.device)
+    print("mini_vllm input IDs: ", input_ids.tolist())
 
     model = Qwen2p5ForCausalLM(config).to(
         device=settings.device,
@@ -117,6 +118,14 @@ def main() -> None:
     print(f"generated token ids: {result.generated_token_ids}")
     print(f"stop reason: {result.stop_reason}")
     print(f"\n{result.generated_text}")
+
+    from mini_llm.reference import load_tokenizer
+    print("HF token IDs:", result.generated_token_ids)
+    tokenizer = load_tokenizer(ModelSettings())
+    for index, token_id in enumerate(result.generated_token_ids):
+        print(index, token_id, repr(tokenizer.decode([token_id])))
+        if index == 20:
+            break
 
 
 if __name__ == "__main__":

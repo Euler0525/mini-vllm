@@ -22,6 +22,7 @@ def generate(
     model = load_model(settings, attention_implementation="eager")
     device = str(next(model.parameters()).device)
     inputs = encode_prompt(tokenizer, prompt, device)
+    print("HF input IDs: ", inputs.input_ids.tolist())
 
     output = prefill(model, inputs.input_ids, inputs.attention_mask)
     token_ids = [output.next_token_id]
@@ -70,12 +71,20 @@ def main() -> None:
     result = generate(args.prompt, args.max_new_tokens)
     print(f"prompt tokens: {result.prompt_tokens}")
     print(f"generated tokens: {len(result.generated_token_ids)}")
+    print(f"generated token ids: {result.generated_token_ids}")
     print(f"prefill calls: {result.prefill_calls}")
     print(f"decode calls: {result.decode_calls}")
     print(f"prefill: {result.prefill_ms:.3f} ms")
     print(f"average decode: {result.average_decode_ms:.3f} ms")
     print(f"stop reason: {result.stop_reason}")
     print(f"\n{result.generated_text}")
+
+    print("HF token IDs:", result.generated_token_ids)
+    tokenizer = load_tokenizer(ModelSettings())
+    for index, token_id in enumerate(result.generated_token_ids):
+        print(index, token_id, repr(tokenizer.decode([token_id])))
+        if index == 20:
+            break
 
 
 if __name__ == "__main__":
