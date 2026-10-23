@@ -36,7 +36,8 @@ def main():
         "candidates", type=Path, nargs="+", help="Candidate result JSONs"
     )
     args = parser.parse_args()
-    results = Path(__file__).resolve().parents[2] / "artifacts/inference/results"
+    results = Path(__file__).resolve(
+    ).parents[2] / "artifacts/inference/results"
     paths = [
         p if p.is_absolute() else results / p
         for p in [args.reference, *args.candidates]
@@ -60,6 +61,8 @@ def main():
             "eos_token_id",
         ):
             if document[field] != reference[field]:
+                print(document[field])
+                print(reference[field])
                 raise ValueError(f"Experiment configuration differs: {field}")
         candidate = index_requests(document)
         if gold.keys() != candidate.keys():

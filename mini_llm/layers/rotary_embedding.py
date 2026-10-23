@@ -53,11 +53,39 @@ class RotaryEmbedding(nn.Module):
     def __init__(self, head_dim: int, base: float):
         super().__init__()
 
-        # omega_i = base^(-2i / head_dim)
-        inv_freq = 1.0 / (
-            base ** (torch.arange(0, head_dim, 2).float() / head_dim)
+        # # omega_i = base^(-2i / head_dim)
+        # inv_freq = 1.0 / (
+        #     base ** (torch.arange(0, head_dim, 2).float() / head_dim)
+        # )
+        # self.register_buffer("inv_freq", inv_freq, persistent=False)
+        self.head_dim = head_dim
+        self.base = base
+        self.register_buffer(
+            "inv_freq",
+            self._make_inv_freq(),
+            persistent=False,
         )
-        self.register_buffer("inv_freq", inv_freq, persistent=False)
+
+    def _make_inv_freq(
+        self,
+        device: torch.device | None = None,
+    ) -> torch.Tensor:
+        return 1.0 / (
+            self.base ** (
+                torch.arange(
+                    0,
+                    self.head_dim,
+                    2,
+                    device=device,
+                    dtype=torch.float32,
+                ) / self.head_dim
+            )
+        )
+
+    def _apply(self, fn, recurse: bool = True) -> "RotaryEmbedding":
+        super()._apply(fn, recurse=recurse)
+        self.inv_freq = self._make_inv_freq(self.inv_freq.device)
+        return self
 
     def forward(
         self,

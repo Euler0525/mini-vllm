@@ -60,6 +60,48 @@ def generate(
         dtype=settings.dtype,
     ).eval()
     load_safetensors_weights(model, model_path / "model.safetensors")
+
+    # from transformers import AutoModelForCausalLM
+
+    # hf_reference = AutoModelForCausalLM.from_pretrained(
+    #     model_path,
+    #     local_files_only=True,
+    #     dtype=settings.dtype,
+    #     attn_implementation="eager",
+    # ).eval()
+
+    # expected = dict(hf_reference.named_parameters())
+    # actual = dict(model.named_parameters())
+    # assert actual.keys() == expected.keys(), "HF does not match the local parameter name"
+
+    # mismatches = [
+    #     name
+    #     for name, parameter in actual.items()
+    #     if not torch.equal(parameter.detach().cpu(), expected[name].detach().cpu())
+    # ]
+    # print("checked parameters:", len(actual))
+    # print("weight mismatches:", mismatches)
+
+    # freqs = {}
+    # for label, current in (("HF", hf_reference), ("mini", model)):
+    #     name, value = next(
+    #         (name, value)
+    #         for name, value in current.named_buffers()
+    #         if name.endswith(".inv_freq")
+    #     )
+    #     print(label, name, value.dtype)
+    #     freqs[label] = value.detach().float().cpu()
+
+    # assert freqs["HF"].shape == freqs["mini"].shape
+    # print("inv_freq equal:", torch.equal(freqs["HF"], freqs["mini"]))
+    # print("inv_freq max abs diff:",
+    #       (freqs["HF"] - freqs["mini"]).abs().max().item())
+    # for layer in model.model.layers:
+    #     rope = layer.self_attn.rotary_emb
+    #     rope.inv_freq = freqs["HF"].to(device=rope.inv_freq.device)
+    #     assert rope.inv_freq.dtype == torch.float32
+    # del hf_reference, expected, actual
+
     kv_cache = KVCache.allocate(
         config,
         batch_size=1,

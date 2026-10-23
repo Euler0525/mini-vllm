@@ -56,6 +56,33 @@ def generate_tokens(
     with torch.inference_mode():
         logits = model.prefill(input_ids, kv_cache)
         while input_ids.shape[1] + len(generated_token_ids) < kv_cache.max_model_len:
+            # if len(generated_token_ids) == 18:
+            #     scores = logits[0].float()
+            #     values, indices = scores.topk(5)
+            #     print("logits dtype:", logits.dtype)
+            #     print("plans  [6649]:", scores[6649].item())
+            #     print("choices[11454]:", scores[11454].item())
+            #     print("top5 (token_id, logit):",
+            #           list(zip(indices.tolist(), values.tolist())))
+            #     prefix_ids = torch.tensor(
+            #         [generated_token_ids], dtype=input_ids.dtype, device=input_ids.device
+            #     )
+            #     full_ids = torch.cat([input_ids, prefix_ids], dim=1)
+            #     assert full_ids.shape[1] == 53
+
+            #     positions = torch.arange(
+            #         full_ids.shape[1], device=full_ids.device
+            #     ).unsqueeze(0)
+            #     hidden_states = model(full_ids, positions)
+            #     full_scores = model.compute_logits(
+            #         hidden_states[:, -1])[0].float()
+
+            #     print("mini no-cache plans:", full_scores[6649].item())
+            #     print("mini no-cache choices:", full_scores[11454].item())
+            #     values, indices = full_scores.topk(5)
+            #     print("mini no-cache top5:",
+            #           list(zip(indices.tolist(), values.tolist())))
+
             token_id = sample_next_token(
                 logits,
                 sampling_params.temperature,

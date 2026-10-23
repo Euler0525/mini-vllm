@@ -66,6 +66,14 @@ def decode(
         )
 
     last_logits = outputs.logits[:, -1, :]
+    # if attention_mask.shape[1] == 53:
+    #     scores = last_logits[0].float()
+    #     values, indices = scores.topk(5)
+    #     print("HF logits dtype:", last_logits.dtype)
+    #     print("HF plans  [6649]:", scores[6649].item())
+    #     print("HF choices[11454]:", scores[11454].item())
+    #     print("HF top5 (token_id, logit):",
+    #           list(zip(indices.tolist(), values.tolist())))
     return StepOutput(
         next_token_id=last_logits.argmax(dim=-1).item(),
         state=DecodeState(

@@ -1,3 +1,4 @@
+import torch
 import argparse
 
 from mini_llm.config import (
@@ -34,6 +35,27 @@ def generate(
     while token_ids[-1] != tokenizer.eos_token_id and len(token_ids) < max_new_tokens:
         output = decode(model, token_ids[-1], state)
         token_ids.append(output.next_token_id)
+        # if len(token_ids) == 19:
+        #     prefix_ids = torch.tensor(
+        #         [token_ids[:-1]],
+        #         dtype=inputs.input_ids.dtype,
+        #         device=inputs.input_ids.device,
+        #     )
+        #     full_ids = torch.cat([inputs.input_ids, prefix_ids], dim=1)
+        #     assert full_ids.shape[1] == 53
+
+        #     with torch.inference_mode():
+        #         full_scores = model(
+        #             input_ids=full_ids,
+        #             attention_mask=torch.ones_like(full_ids),
+        #             use_cache=False,
+        #         ).logits[0, -1].float()
+
+        #     print("HF no-cache plans:", full_scores[6649].item())
+        #     print("HF no-cache choices:", full_scores[11454].item())
+        #     values, indices = full_scores.topk(5)
+        #     print("HF no-cache top5:", list(zip(indices.tolist(), values.tolist())))
+
         state = output.state
         decode_ms += output.elapsed_ms
         decode_calls += 1
