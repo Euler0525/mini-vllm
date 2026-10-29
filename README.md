@@ -1,6 +1,29 @@
-# AI Infra Learning
+# mini-vllm
 
-一个从零实现 mini vLLM 的学习工程。目标模型固定为 `Qwen/Qwen2.5-0.5B-Instruct@7ae5576`，逐步实现模型结构、权重加载、KV Cache、Continuous Batching、Paged Attention、Triton Kernel、CUDA Graph 和 Tensor Parallel。
+面向单卡 LLM 推理的轻量运行时与可复现评测工程。当前以 `Qwen/Qwen2.5-0.5B-Instruct@7ae5576` 为参考模型，支持自定义模型前向、权重加载、连续 KV Cache 和单请求生成，并提供 HF、mini_llm、vLLM 的统一输入对照工具。后续扩展 Continuous Batching、分页 KV、Triton Kernel、CUDA Graph 和 Tensor Parallel。
+
+项目最终交付 mini-vllm 与可复现推理评测工具集，以 RTX 4060 Laptop 8GB 单卡为主要验证环境。后续开发按功能里程碑推进，examples 实践包含在同一份约 240–300 小时的投入中：
+
+- [vLLM 学习与求职计划](docs/vLLM学习与求职计划.md)：源码阅读路线、mini_llm 衔接、性能基准、profiling、调优和求职作品验收。
+- [vLLM examples 实践计划](docs/vLLM-examples实践计划.md)：当前 examples 全目录地图、优先级、12 个实践模块、实例卡与独立复现标准。
+- [开源推理项目实施总览](docs/开源推理项目实施总览.md)：全部 12 份详细手册、前置条件、待开发模块、交付边界与版本验收。
+
+从 [vLLM 基线验证与性能评测手册](docs/vLLM基线验证与性能评测手册.md) 开始，依次完成在线测量、动态调度、容量评测、分页 KV、性能分析、Triton、编译/图执行、SLO 调优、投机解码、KV 交接，最后按 [开源版本发布与复现手册](docs/开源推理项目发布与复现手册.md) 交付。手册中区分现有命令和待开发接口，规划中的能力需完成实现与验证后再更新为已支持。
+
+## 项目组织
+
+工程按职责和功能组织。时间进度只用于开发计划；模块、目录、配置和报告使用描述用途的稳定名称，后续阶段继续维护同一套实现。
+
+| 位置 | 职责 | 版本管理 |
+| --- | --- | --- |
+| `mini_llm/` | 模型、KV Cache、调度和生成等运行时实现 | 提交源码 |
+| `tests/` | 算子、模型和引擎行为的正确性验证 | 提交测试 |
+| `benchmarks/inference/` | 输入准备、跨后端对照和推理性能测量 | 提交可复用工具 |
+| `configs/inference/` | 按硬件和运行场景命名的服务配置 | 提交配置 |
+| `docs/` | 架构、复现指南、设计说明与开发计划 | 提交文档；经过验证的报告整理到 `docs/reports/` |
+| `artifacts/` | 本地模型链接、生成输入、原始日志、结果与 trace | 运行时生成，由 Git 忽略 |
+
+例如，工具使用 `prepare_workload.py`、`run_inference.py`、`compare_outputs.py`，单卡配置使用 `vllm-single-gpu.yaml`，报告使用 `inference-baseline.md`。评测数据需要能追溯到代码版本、模型 revision、配置和负载；原始结果保留在本地，公开报告附复现方法。
 
 ## 目录结构
 
@@ -28,7 +51,16 @@
 │   ├── reference.py              # Hugging Face 正确性基线
 │   └── __init__.py
 ├── tests/                        # 配置、算子、单层和完整模型测试
-├── docs/                         # 学习笔记
+├── benchmarks/
+│   └── inference/
+│       ├── prepare_workload.py  # 固定 token 输入与合成负载
+│       ├── run_inference.py     # HF / mini_llm / vLLM 推理评测
+│       └── compare_outputs.py   # 实验条件与 token 输出对照
+├── configs/
+│   └── inference/
+│       └── vllm-single-gpu.yaml # 单卡服务基线配置
+├── docs/                         # 架构、设计、复现指南与计划
+├── artifacts/                    # 本地运行产物，执行时生成并由 Git 忽略
 ├── mha_mqa_lab/                  # MHA/MQA 数学、KV Cache 与带宽实验
 ├── qwen2p5.py                    # 单文件的详细推理观察脚本
 ├── pyproject.toml

@@ -1,0 +1,14 @@
+# Run from the project root after preparing the local model link.
+model: artifacts/models/qwen2.5-0.5b
+served-model-name: qwen2.5-0.5b
+host: 127.0.0.1
+port: 8000
+dtype: bfloat16
+max-model-len: 2048
+max-num-seqs: 8
+max-num-batched-tokens: 1024
+gpu-memory-utilization: 0.70
+enable-chunked-prefill: true
+enable-prefix-caching: false
+enforce-eager: true
+generation-config: vllm
